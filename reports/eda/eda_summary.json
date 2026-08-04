@@ -1,0 +1,88 @@
+{
+  "counts": {
+    "train": {
+      "Leaf_Algal": 323,
+      "Leaf_Blight": 308,
+      "Leaf_Colletotrichum": 280,
+      "Leaf_Healthy": 338,
+      "Leaf_Phomopsis": 287,
+      "Leaf_Rhizoctonia": 278
+    },
+    "val": {
+      "Leaf_Algal": 69,
+      "Leaf_Blight": 66,
+      "Leaf_Colletotrichum": 60,
+      "Leaf_Healthy": 72,
+      "Leaf_Phomopsis": 61,
+      "Leaf_Rhizoctonia": 59
+    },
+    "test": {
+      "Leaf_Algal": 70,
+      "Leaf_Blight": 66,
+      "Leaf_Colletotrichum": 60,
+      "Leaf_Healthy": 74,
+      "Leaf_Phomopsis": 63,
+      "Leaf_Rhizoctonia": 61
+    }
+  },
+  "image_properties": {
+    "all_same_size": true,
+    "size_px": "400x400",
+    "total_train_images": 1814
+  },
+  "dataset_rgb": {
+    "mean": [
+      0.4483051002025604,
+      0.5054818391799927,
+      0.3600558042526245
+    ],
+    "std": [
+      0.06240494176745415,
+      0.0562824010848999,
+      0.07352971285581589
+    ]
+  },
+  "class_rgb_mean": {
+    "Leaf_Algal": {
+      "R": 0.4329242408275604,
+      "G": 0.5026149749755859,
+      "B": 0.35535845160484314
+    },
+    "Leaf_Blight": {
+      "R": 0.4501926004886627,
+      "G": 0.5077234506607056,
+      "B": 0.3732503056526184
+    },
+    "Leaf_Colletotrichum": {
+      "R": 0.44465622305870056,
+      "G": 0.49778103828430176,
+      "B": 0.353516548871994
+    },
+    "Leaf_Healthy": {
+      "R": 0.44783517718315125,
+      "G": 0.5285965800285339,
+      "B": 0.3843691647052765
+    },
+    "Leaf_Phomopsis": {
+      "R": 0.43171757459640503,
+      "G": 0.47524088621139526,
+      "B": 0.36215224862098694
+    },
+    "Leaf_Rhizoctonia": {
+      "R": 0.4854555130004883,
+      "G": 0.5172021389007568,
+      "B": 0.32575613260269165
+    }
+  },
+  "corrupt_images": [],
+  "total_images_checked": 2595,
+  "class_weights": {
+    "Leaf_Algal": 0.936,
+    "Leaf_Blight": 0.9816,
+    "Leaf_Colletotrichum": 1.0798,
+    "Leaf_Healthy": 0.8945,
+    "Leaf_Phomopsis": 1.0534,
+    "Leaf_Rhizoctonia": 1.0875
+  },
+  "imbalance_ratio": 1.216
+}

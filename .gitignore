@@ -1,0 +1,55 @@
+# ==================== Python ====================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+*.whl
+
+# ==================== Virtual Environment ====================
+venv/
+.venv/
+env/
+ENV/
+
+# ==================== IDE / Editor ====================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.classpath
+.settings/
+
+# ==================== OS ====================
+.DS_Store
+Thumbs.db
+desktop.ini
+ehthumbs.db
+
+# ==================== Dataset (quá lớn để push lên Git) ====================
+data/raw/
+
+# ==================== Model Outputs / Checkpoints ====================
+outputs/
+*.pth
+*.pt
+*.h5
+*.ckpt
+*.onnx
+
+# ==================== Logs ====================
+*.log
+logs/
+
+# ==================== Jupyter ====================
+.ipynb_checkpoints/
+
+# ==================== Misc ====================
+.env
+*.bak
+*.tmp

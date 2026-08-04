@@ -1,0 +1,85 @@
+==============================================================
+BÁO CÁO PHÂN TÍCH DATASET — LÁ SẦU RIÊNG
+==============================================================
+
+1. SỐ LƯỢNG ẢNH THEO SPLIT VÀ CLASS
+--------------------------------------------------------------
+Lớp bệnh                    TRAIN     VAL    TEST    TỔNG
+--------------------------------------------------------------
+Đốm rong                      323      69      70     462
+Cháy lá                       308      66      66     440
+Thán thư                      280      60      60     400
+Lá khỏe                       338      72      74     484
+Phomopsis                     287      61      63     411
+Rhizoctonia                   278      59      61     398
+--------------------------------------------------------------
+TỔNG                         1814     387     394    2595
+
+  Tỉ lệ: Train 69.9% | Val 14.9% | Test 15.2%
+
+2. KÍCH THƯỚC ẢNH
+--------------------------------------------------------------
+  Tất cả 1814 ảnh (tập train) đều có kích thước đồng nhất:
+  → 400 × 400 px (width × height)
+  → Không cần lo ảnh méo hay kích thước bất thường.
+  → Sẽ Resize xuống 256×256, sau đó crop về 224×224 (chuẩn ImageNet).
+
+3. PHÂN PHỐI MÀU SẮC RGB TRUNG BÌNH (tập Train)
+--------------------------------------------------------------
+  Phương pháp: So sánh R/G ratio từng class với class lá khỏe (baseline).
+  R/G ratio cao hơn lá khỏe → lá có màu nâu/đỏ hơn → triệu chứng bệnh rõ hơn.
+
+  Lớp bệnh                   R       G       B     R/G  Nhận xét
+  ------------------------------------------------------------------------
+  Đốm rong               0.433   0.503   0.355   0.861  R/G cao hơn lá khỏe +0.014 → nâu nhẹ
+  Cháy lá                0.450   0.508   0.373   0.887  R/G cao hơn lá khỏe +0.039 → nâu/đỏ rõ
+  Thán thư               0.445   0.498   0.354   0.893  R/G cao hơn lá khỏe +0.046 → nâu/đỏ rõ
+  Lá khỏe                0.448   0.529   0.384   0.847  ← Baseline (lá khỏe, R/G thấp nhất)
+  Phomopsis              0.432   0.475   0.362   0.908  R/G cao hơn lá khỏe +0.061 → nâu/đỏ rõ
+  Rhizoctonia            0.485   0.517   0.326   0.939  R/G cao hơn lá khỏe +0.091 → nâu/đỏ rõ
+
+  Mean RGB toàn dataset (train): R=0.4483  G=0.5055  B=0.3601
+  Std  RGB toàn dataset (train): R=0.0624  G=0.0563  B=0.0735
+
+  So sánh với ImageNet normalization:
+    ImageNet mean = [0.485, 0.456, 0.406]
+    Dataset  mean = [0.448, 0.505, 0.360]
+    → Kênh G của dataset (0.505) cao hơn ImageNet (0.456)
+      do toàn bộ ảnh là lá cây (xanh lá chiếm ưu thế).
+    → Vẫn dùng ImageNet normalization vì model pretrained yêu cầu,
+      sai lệch nhỏ và được bù đắp bởi quá trình Fine-tuning.
+
+4. KIỂM TRA ẢNH LỖI (CORRUPT)
+--------------------------------------------------------------
+  Tổng ảnh kiểm tra : 2595
+  Ảnh lỗi           : 0
+  → Không có ảnh nào bị lỗi. Không cần bước làm sạch.
+
+5. MỨC ĐỘ CÂN BẰNG CLASS VÀ CLASS WEIGHTS
+--------------------------------------------------------------
+  Tỉ lệ max/min (train): 1.22×  (338 / 278 ảnh)
+  → Dataset CÂN BẰNG TỐT (ratio < 1.5).
+  → Vẫn áp dụng Class Weights để model không thiên vị class nào.
+  → Công thức: weight[c] = total / (n_classes × count[c])
+
+  Lớp bệnh                Train    Weight
+  ------------------------------------------
+  Đốm rong                  323    0.9360
+  Cháy lá                   308    0.9816
+  Thán thư                  280    1.0798
+  Lá khỏe                   338    0.8945
+  Phomopsis                 287    1.0534
+  Rhizoctonia               278    1.0875
+
+6. TỔNG KẾT VÀ NHẬN XÉT
+--------------------------------------------------------------
+  - Tổng dataset   : 2595 ảnh | 6 lớp bệnh
+  - Kích thước ảnh : Đồng nhất 400×400px — chất lượng cao
+  - Ảnh lỗi        : 0 — không cần làm sạch
+  - Cân bằng class : Tốt (ratio 1.22×)
+  - Đặc trưng màu  : Có sự khác biệt RGB giữa các lớp bệnh
+                     → Mô hình CNN có thể học được đặc trưng màu.
+  - Augmentation   : Phù hợp — flip, rotation, colorjitter
+  - Normalization  : Dùng ImageNet mean/std — phù hợp với pretrained models.
+
+==============================================================
