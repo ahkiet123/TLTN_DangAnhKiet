@@ -54,6 +54,3 @@ python scripts/train.py --model mobilenet_v2
 python scripts/evaluate.py --model mobilenet_v2
 ```
 
-## Tác giả
-
-Đặng Anh Kiệt
