@@ -1,42 +1,59 @@
-# Durian Leaf Disease Classification
+# Phân loại bệnh trên lá sầu riêng
 
-Python project for classifying durian leaf disease images with transfer learning.
+Dự án xây dựng mô hình nhận diện tình trạng lá sầu riêng từ ảnh. Mục tiêu là hỗ trợ phân loại nhanh lá khỏe và một số bệnh thường gặp, phục vụ cho việc tìm hiểu ứng dụng xử lý ảnh trong nông nghiệp.
 
-## Structure
+## Chức năng chính
+
+- Đọc và kiểm tra bộ dữ liệu ảnh theo các tập train, validation và test.
+- Huấn luyện mô hình phân loại ảnh cho 6 nhóm: đốm rong, cháy lá, thán thư, lá khỏe, Phomopsis và Rhizoctonia.
+- Đánh giá kết quả bằng Accuracy, F1-score và ma trận nhầm lẫn.
+- Lưu mô hình và lịch sử huấn luyện để có thể xem lại kết quả.
+
+## Kết quả
+
+- Bộ dữ liệu gồm 2.595 ảnh lá sầu riêng, chia thành 6 nhóm.
+- Kết quả thử nghiệm trên 394 ảnh test đạt **89,09% Accuracy** và **88,93% Weighted F1-score**.
+
+## Công nghệ sử dụng
+
+- Python
+- PyTorch
+- NumPy
+- Matplotlib
+
+## Cấu trúc thư mục
 
 ```text
-data/raw/Durian_Leaf_Diseases/      Raw image dataset split into train/val/test
-docs/                               Project reports and proposal files
-outputs/                            Training checkpoints, histories, model summaries
-reports/eda/                        EDA figures and summaries
-scripts/                            Thin command-line entrypoints
-src/durian_leaf_disease/            Importable Python package
+data/       Dữ liệu ảnh
+src/        Mã nguồn chính
+scripts/    Các lệnh chạy dự án
+outputs/    Mô hình và kết quả huấn luyện
+reports/    Báo cáo, biểu đồ phân tích dữ liệu
+docs/       Tài liệu dự án
 ```
 
-## Setup
+## Cài đặt và chạy
 
 ```powershell
-# Cài dependencies (nên dùng virtualenv)
+python -m venv .venv
+.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
-
-# Kiểm tra dataset load đúng
-python scripts/run_eda.py
-
-# Chạy smoke test trước khi train full
-python scripts/smoke_test.py
-
-# Demo train nhanh 3 epochs (1 model) để kiểm chứng pipeline
-python scripts/demo_train.py
-
-# Train 3 models (30 epochs each)
-python scripts/train.py
-
-# So sánh cấu hình / forward pass
-python scripts/compare_models.py
-
-# Đánh giá trên tập test + vẽ confusion matrix
-python scripts/evaluate.py --model all
 ```
 
-The dataset path is configured in `src/durian_leaf_disease/config.py`.
-Set `DURIAN_DATASET_ROOT` if you need to point the project at another dataset location.
+Đặt bộ dữ liệu tại `data/raw/Durian_Leaf_Diseases/` với các thư mục `train`, `val` và `test`. Nếu bộ dữ liệu ở vị trí khác, có thể đặt biến môi trường:
+
+```powershell
+$env:DURIAN_DATASET_ROOT = "D:\duong-dan\Durian_Leaf_Diseases"
+```
+
+Chạy kiểm tra dữ liệu, huấn luyện và đánh giá:
+
+```powershell
+python scripts/run_eda.py
+python scripts/train.py --model mobilenet_v2
+python scripts/evaluate.py --model mobilenet_v2
+```
+
+## Tác giả
+
+Đặng Anh Kiệt
