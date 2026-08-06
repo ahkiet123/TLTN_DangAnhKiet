@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import _bootstrap  # noqa: F401
 import time
+from pathlib import Path
 
 import torch
 import torch.nn as nn
@@ -25,9 +26,16 @@ from durian_leaf_disease.config import (
     LR_HEAD,
     MIXED_PRECISION,
     NUM_CLASSES,
+    OUTPUT_DIR,
     WEIGHT_DECAY,
 )
 from durian_leaf_disease.data.dataset import get_class_weights, get_dataloaders
+from durian_leaf_disease.evaluation.evaluator import (
+    compute_inference_time,
+    plot_roc_curves,
+    predict,
+)
+from durian_leaf_disease.evaluation.gradcam import generate_gradcam_grid
 from durian_leaf_disease.models.transfer import build_model, unfreeze_last_n_blocks
 
 
@@ -119,6 +127,35 @@ def smoke_train(model_name: str, dataloaders: dict, class_weights: torch.Tensor)
     elapsed_train2 = time.time() - t0
     print(f"  Train 1 epoch (phase 2): {elapsed_train2:.1f}s")
 
+    model.eval()
+    t0 = time.time()
+    with torch.no_grad():
+        for images, labels in dataloaders["val"]:
+            images = images.to(DEVICE, non_blocking=True)
+            labels = labels.to(DEVICE, non_blocking=True)
+            with autocast(device_type=DEVICE.type, enabled=amp_enabled):
+                outputs = model(images)
+    elapsed_val2 = time.time() - t0
+    print(f"  Val   1 epoch (phase 2): {elapsed_val2:.1f}s")
+
+    # Exercise evaluation-only functionality without creating a checkpoint.
+    smoke_output_dir = Path(OUTPUT_DIR) / "smoke_test" / model_name
+    labels, _preds, probabilities = predict(model, dataloaders["test"])
+    inference = compute_inference_time(model, DEVICE)
+    roc_data = plot_roc_curves(labels, probabilities, model_name, smoke_output_dir)
+    gradcam_path = generate_gradcam_grid(
+        model,
+        dataloaders["test"],
+        model_name,
+        smoke_output_dir / "gradcam_grid.png",
+    )
+    print(
+        f"  Inference: {inference['avg_ms']:.2f} ms/image | "
+        f"{inference['fps']:.1f} FPS"
+    )
+    print(f"  ROC macro AUC: {roc_data['macro_auc']}")
+    print(f"  Grad-CAM: {gradcam_path}")
+
     del model
     if torch.cuda.is_available():
         torch.cuda.empty_cache()
@@ -127,6 +164,9 @@ def smoke_train(model_name: str, dataloaders: dict, class_weights: torch.Tensor)
         "phase1_train_s": elapsed_train,
         "phase1_val_s": elapsed_val,
         "phase2_train_s": elapsed_train2,
+        "phase2_val_s": elapsed_val2,
+        "inference_ms": inference["avg_ms"],
+        "inference_fps": inference["fps"],
     }
 
 
@@ -150,17 +190,18 @@ def main() -> None:
                 torch.cuda.empty_cache()
 
     print(f"\n{'='*60}")
-    print("  TỔNG KẾT SMOKE TEST")
+    print("  TONG KET SMOKE TEST")
     print(f"{'='*60}")
     for name, t in timings.items():
         if t is None:
             print(f"  {name:<20}: FAILED")
         else:
             total_per_epoch = t["phase1_train_s"] + t["phase1_val_s"]
+            phase2_per_epoch = t["phase2_train_s"] + t["phase2_val_s"]
             print(f"  {name:<20}: phase1 ~{total_per_epoch:.0f}s/epoch | "
-                  f"phase2 ~{t['phase2_train_s']:.0f}s/epoch")
-            print(f"  {'':20}  (ước tính full 30 epochs: "
-                  f"~{((total_per_epoch*10 + t['phase2_train_s']*20)/3600):.1f}h)")
+                  f"phase2 ~{phase2_per_epoch:.0f}s/epoch")
+            print(f"  {'':20}  (estimated max 50 epochs: "
+                  f"~{((total_per_epoch*10 + phase2_per_epoch*40)/3600):.1f}h)")
 
 
 if __name__ == "__main__":

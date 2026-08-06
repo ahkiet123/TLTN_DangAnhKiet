@@ -469,7 +469,7 @@ if __name__ == "__main__":
     print(f"  • Tất cả model dùng pretrained ImageNet1K-V1")
     print(f"  • Classifier head mới: Dropout(0.3)→Linear→BN1d→ReLU→Dropout(0.2)→Linear")
     print(f"  • Phase 1: Chỉ train classifier head (10 epochs)")
-    print(f"  • Phase 2: Unfreeze 3 blocks cuối backbone (20 epochs)")
+    print(f"  • Phase 2: Unfreeze 3 blocks cuối backbone (tối đa 40 epochs)")
     print(f"  • Input chuẩn: 224×224 px, chuẩn hóa ImageNet mean/std")
 
     # ── Lưu kết quả ra JSON ───────────────────────────────────────────────

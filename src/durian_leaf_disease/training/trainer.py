@@ -119,16 +119,21 @@ def train_model(model_name: str, dataloaders: dict, class_weights: torch.Tensor)
     early_stopper = EarlyStopping(patience=EARLY_STOPPING)
 
     history = {"train_loss": [], "train_acc": [], "val_loss": [], "val_acc": []}
-    best_val_acc  = 0.0
+    best_val_acc  = float("-inf")
+    best_epoch: int | None = None
     best_weights  = copy.deepcopy(model.state_dict())
+    training_started_at = time.perf_counter()
 
     def save_checkpoint(epoch: int) -> None:
+        elapsed_seconds = time.perf_counter() - training_started_at
         torch.save({
             "epoch":       epoch,
+            "best_epoch":  epoch,
             "model_name":  model_name,
             "model_state": best_weights,
             "val_acc":     best_val_acc,
             "class_names": CLASS_NAMES,
+            "training_time_seconds": elapsed_seconds,
         }, ckpt_path)
 
     # ===================================================
@@ -165,6 +170,7 @@ def train_model(model_name: str, dataloaders: dict, class_weights: torch.Tensor)
 
         if val_acc > best_val_acc:
             best_val_acc = val_acc
+            best_epoch = epoch
             best_weights = copy.deepcopy(model.state_dict())
             save_checkpoint(epoch)
 
@@ -224,6 +230,7 @@ def train_model(model_name: str, dataloaders: dict, class_weights: torch.Tensor)
 
         if val_acc > best_val_acc:
             best_val_acc = val_acc
+            best_epoch = epoch
             best_weights = copy.deepcopy(model.state_dict())
             # Lưu checkpoint tốt nhất
             save_checkpoint(epoch)
@@ -233,10 +240,21 @@ def train_model(model_name: str, dataloaders: dict, class_weights: torch.Tensor)
             break
 
     # Lưu history
+    training_time_seconds = time.perf_counter() - training_started_at
+    history["training_time_seconds"] = training_time_seconds
+    history["training_time_minutes"] = training_time_seconds / 60.0
+    history["best_epoch"] = best_epoch
+    history["best_val_acc"] = best_val_acc
+
+    # Rewrite the best checkpoint once so its metadata contains the full run time.
+    if best_epoch is not None:
+        save_checkpoint(best_epoch)
+
     history_path = os.path.join(model_dir, "history.json")
     with open(history_path, "w", encoding="utf-8") as f:
         json.dump(history, f, indent=2)
 
+    print(f"  Training time    : {training_time_seconds / 60.0:.2f} minutes")
     print(f"\n  ✓ Best Val Accuracy: {best_val_acc*100:.2f}%")
     print(f"  ✓ Checkpoint: outputs/{model_name}/best_model.pth")
     print(f"  ✓ History   : outputs/{model_name}/history.json")
@@ -247,8 +265,15 @@ def train_model(model_name: str, dataloaders: dict, class_weights: torch.Tensor)
 # ENTRY POINT
 # =============================================================================
 
-def main() -> None:
+def main(model_names: list[str] | None = None) -> None:
     set_seed()
+
+    selected_models = MODELS_TO_TRAIN if model_names is None else model_names
+    unsupported = set(selected_models) - set(MODELS_TO_TRAIN)
+    if unsupported:
+        raise ValueError(f"Model không được hỗ trợ: {sorted(unsupported)}")
+    if not selected_models:
+        raise ValueError("Danh sách model cần huấn luyện đang rỗng")
 
     print(f"Device: {DEVICE}")
     if torch.cuda.is_available():
@@ -261,7 +286,7 @@ def main() -> None:
     print(f"Class weights: {class_weights.cpu().tolist()}")
 
     results = {}
-    for model_name in MODELS_TO_TRAIN:
+    for model_name in selected_models:
         val_acc = train_model(model_name, dataloaders, class_weights)
         results[model_name] = val_acc
 

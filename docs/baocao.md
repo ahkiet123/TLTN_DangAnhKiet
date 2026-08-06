@@ -72,9 +72,9 @@ $$\text{Feature Map} \rightarrow \text{Dropout}(0.3) \rightarrow \text{Linear}(\
 
 ### 3. Chiến lược Transfer Learning và Fine-tuning 2 giai đoạn
 * **Giai đoạn 1 (Feature Extraction — 10 Epochs):** Đóng băng (freeze) toàn bộ trọng số của backbone mạng đã được pretrained trên ImageNet. Chỉ huấn luyện bộ phân loại Classifier Head mới với learning rate lớn (`lr = 1e-3`).
-* **Giai đoạn 2 (Fine-tuning — 20 Epochs):** Khôi phục trọng số tốt nhất từ Giai đoạn 1. Mở băng (unfreeze) **3 block cuối cùng** của backbone để tinh chỉnh sâu hơn các đặc trưng cấp cao phù hợp với cấu trúc vết bệnh lá sầu riêng. Sử dụng kỹ thuật học thích ứng đa tốc độ:
-  * Trọng số backbone cập nhật với learning rate rất nhỏ (`lr = 1e-5`) để tránh làm hỏng các bộ lọc cạnh/màu sắc cơ bản.
-  * Trọng số classifier head cập nhật với learning rate vừa phải (`lr = 1e-4`).
+* **Giai đoạn 2 (Fine-tuning — tối đa 40 Epochs):** Khôi phục trọng số tốt nhất từ Giai đoạn 1. Mở băng (unfreeze) **3 block cuối cùng** của backbone để tinh chỉnh sâu hơn các đặc trưng cấp cao phù hợp với cấu trúc vết bệnh lá sầu riêng. Sử dụng kỹ thuật học thích ứng đa tốc độ. Tổng số epochs tối đa của hai giai đoạn là 50, có áp dụng Early Stopping:
+  * Trọng số backbone cập nhật với learning rate nhỏ (`lr = 1e-4`) để hạn chế làm thay đổi các đặc trưng cơ bản.
+  * Trọng số classifier head cập nhật với learning rate cao hơn (`lr = 1e-3`).
   * *Lưu ý đặc biệt với ResNet-50:* Khi mở băng 3 block cuối (layer 2, 3, 4) sẽ mở khóa ~99% tham số. Chúng được kiểm soát chặt chẽ bằng Weight Decay mạnh và Early Stopping.
 
 ### 4. Cấu hình các siêu tham số huấn luyện (Hyperparameters)
@@ -110,4 +110,3 @@ Sau khi quá trình huấn luyện hoàn tất, hiệu năng phân loại của 
 * Dự án thiết lập tích hợp phương pháp **Grad-CAM (Gradient-weighted Class Activation Mapping)** ở bước đánh giá.
 * **Cách thức:** Trích xuất bản đồ kích hoạt (activation map) từ lớp tích chập cuối cùng của backbone trước khi qua lớp Global Average Pooling (ví dụ: lớp `features` cuối ở MobileNetV2/EfficientNet-B0, hoặc lớp `layer4` ở ResNet-50).
 * **Ý nghĩa:** Trực quan hóa bằng bản đồ nhiệt (heatmap) đè lên ảnh gốc để hiển thị rõ vùng đặc trưng trên lá sầu riêng mà mô hình tập trung vào khi phân loại (ví dụ: vết cháy lá khô, đốm bệnh thán thư tròn hay đốm rong loang lổ). Điều này tăng tính minh bạch và độ tin cậy của mô hình học sâu đối với nông nghiệp.
-

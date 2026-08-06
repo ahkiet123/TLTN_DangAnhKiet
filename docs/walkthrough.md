@@ -83,7 +83,7 @@
 
 ### 3. Chiến lược Transfer Learning 2 giai đoạn
 * **Giai đoạn 1 (Feature Extraction — 10 epochs):** Đóng băng toàn bộ backbone, chỉ huấn luyện classifier head mới. Giúp giữ nguyên các bộ lọc cạnh/màu sắc hữu ích đã học từ ImageNet và giúp mô hình hội tụ nhanh ở giai đoạn đầu.
-* **Giai đoạn 2 (Fine-tuning — 20 epochs):** Mở 3 block cuối cùng của backbone để tinh chỉnh. Các block đầu (cơ bản) được giữ đóng băng, các block cuối (đặc trưng bậc cao) được tinh chỉnh để khớp với hình dạng đốm bệnh và cấu trúc lá sầu riêng thực tế.
+* **Giai đoạn 2 (Fine-tuning — tối đa 40 epochs):** Mở 3 block cuối cùng của backbone để tinh chỉnh. Các block đầu (cơ bản) được giữ đóng băng, các block cuối (đặc trưng bậc cao) được tinh chỉnh để khớp với hình dạng đốm bệnh và cấu trúc lá sầu riêng thực tế. Tổng số epochs tối đa của hai giai đoạn là 50, có áp dụng Early Stopping.
   * *Lưu ý đối với ResNet-50:* Việc mở 3 block cuối (layer 2, 3, 4) sẽ mở khóa ~99% tham số huấn luyện. Lượng tham số này được điều hòa nghiêm ngặt bằng `weight_decay`, `early_stopping` và augmentation mạnh mẽ để tránh overfitting.
 
 ### 4. Các điểm cải tiến và sửa lỗi (v1 -> v2)
@@ -141,4 +141,3 @@ Các sửa đổi và tối ưu hóa chi tiết theo sơ đồ kiểm tra lỗi:
 * **Tính di động (Portability):** Đã kiểm chứng tìm kiếm trên toàn dự án, **không còn xuất hiện bất kỳ đường dẫn cứng chứa tên người dùng (`sys.path.insert`) nào**. Dự án sạch sẽ và hoàn toàn độc lập với môi trường chạy.
 * **Chạy thử nghiệm Dataset:** Chạy kiểm thử tệp [dataset.py](file:///c:/Users/ahkie/VSCode_Projects/TLTN_DangAnhKiet/dataset.py) cho kết quả nạp dữ liệu hoàn hảo, không gặp bất cứ lỗi luồng hay lỗi nạp tệp rác.
 * **Chạy thử nghiệm Model:** Chạy kiểm thử tệp [model.py](file:///c:/Users/ahkie/VSCode_Projects/TLTN_DangAnhKiet/model.py) xác nhận cả 3 mô hình Transfer Learning (MobileNetV2, EfficientNet-B0, ResNet-50) đều vượt qua các bước kiểm tra Forward Pass ở cả 2 giai đoạn đóng băng/mở băng, in bảng so sánh dữ liệu và ghi nhận tệp so sánh JSON chính xác.
-
